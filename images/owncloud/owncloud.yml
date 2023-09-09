@@ -1,0 +1,125 @@
+---
+version: "3"
+services:
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    networks:
+      - yosoft-network
+    volumes:
+      - ../data/onlyoffice/logs:/var/log/onlyoffice
+      - ../data/onlyoffice/data:/var/www/onlyoffice/Data
+      - ../data/onlyoffice/lib:/var/lib/onlyoffice
+      - ../data/onlyoffice/rabbitmq:/var/lib/rabbitmq
+      - ../data/onlyoffice/redis:/var/lib/redis
+      - ../data/onlyoffice/db:/var/lib/postgresql
+    environment:
+      LETS_ENCRYPT_DOMAIN: onlyoffice.yosoft.app
+      LETS_ENCRYPT_EMAIL:  mail.yosoft.app
+    labels:
+      # - "traefik.enable=true"
+      # - "traefik.http.routers.onlyoffice.rule=Host(`onlyoffice.yosoft.app`)"
+      # - "traefik.http.routers.onlyoffice.middlewares=onlyoffice-headers"
+      # - "traefik.http.middlewares.onlyoffice-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      # - "traefik.http.middlewares.onlyoffice-headers.headers.accessControlAllowOriginList=*"
+      # - "traefik.http.routers.onlyoffice.entrypoints=websecure"
+      # - "traefik.http.routers.onlyoffice.tls.certresolver=myresolver"
+      # - "traefik.http.services.onlyoffice.loadbalancer.server.port=80" 
+      # Enable this container to be load balancered by Traefik
+      - "traefik.enable=true"
+
+      # Create middleware for redirect all HTTP connections to HTTPS
+      - "traefik.http.middlewares.onlyoffice_redirect_http2https.redirectscheme.scheme=https"
+      # Make the redirect permanent
+      - "traefik.http.middlewares.onlyoffice_redirect_http2https.redirectscheme.permanent=true"
+
+      # Select the endpoint from Traefik which is used for incoming connection.
+      # Normally the endpoint `web` is going to be on port 80 (HTTP).
+      - "traefik.http.routers.onlyoffice_http.entrypoints=web"
+      # List of all the domains there will forwarded to this container
+      - "traefik.http.routers.onlyoffice_http.rule=Host(`onlyoffice.yosoft.app`)"
+      # Select the middleware from Traefik which is used for incoming connection.
+      - "traefik.http.routers.onlyoffice_http.middlewares=onlyoffice_redirect_http2https"
+
+      # Select the endpoint from Traefik which is used for incoming connection.
+      # Normally the endpoint `websecure` is going to be on port 443 (HTTPS).
+      - "traefik.http.routers.onlyoffice_https.entrypoints=websecure"
+      # List of all the domains there will forwarded to this container
+      - "traefik.http.routers.onlyoffice_https.rule=Host(`onlyoffice.yosoft.app`)"
+      # Get SSL/TLS certificate from Let's Encrypt by resolving the HTTPS challenge.
+      - "traefik.http.routers.onlyoffice_https.tls.certresolver=myresolver"
+      # In order to select which port on this container the connections from Traefik should be farwarded to,
+      # there needs to be defined a service.
+      # This service defineds that we load balancer should farward connections to port 80
+      - "traefik.http.services.onlyoffice_https.loadbalancer.server.port=80"
+  nextcloud:
+    image: owncloud/server:latest
+    # container_name: owncloud
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      # - OWNCLOUD_DOMAIN=${OWNCLOUD_DOMAIN}
+      - OWNCLOUD_DOMAIN=owncloud.yosoft.app
+      - OWNCLOUD_DB_TYPE=mysql
+      - OWNCLOUD_DB_NAME=owncloud
+      - OWNCLOUD_DB_USERNAME=owncloud
+      # - OWNCLOUD_DB_PASSWORD=${DB_PASSWORD}
+      - OWNCLOUD_DB_PASSWORD=y0s0ft2050..
+      - OWNCLOUD_DB_HOST=owncloudmariadb
+      # - OWNCLOUD_ADMIN_USERNAME=${ADMIN_USERNAME}
+      - OWNCLOUD_ADMIN_USERNAME=yosoft2050
+      # - OWNCLOUD_ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - OWNCLOUD_ADMIN_PASSWORD=y0s0ft2050..
+      - OWNCLOUD_MYSQL_UTF8MB4=true
+      - OWNCLOUD_REDIS_ENABLED=true
+      - OWNCLOUD_REDIS_HOST=owncloudredis
+    volumes:
+      - ../data/Owncloud/data:/mnt/data
+    ports:
+      - ${PORT}:8080
+    restart: unless-stopped
+    depends_on:
+      - owncloudmariadb
+      - owncloudredis
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.owncloud.rule=Host(`owncloud.yosoft.app`)"
+        - "traefik.http.routers.owncloud.entrypoints=websecure"
+        - "traefik.http.routers.owncloud.tls.certresolver=myresolver"
+        - "traefik.http.services.owncloud.loadbalancer.server.port=8080" 
+    networks:
+      - yosoft-network
+  owncloudmariadb:
+    image: mariadb:10.5
+    # container_name: owncloudmariadb
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      # - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=y0s0ft2050..
+      - MYSQL_USER=owncloud
+      - MYSQL_PASSWORD=y0s0ft2050..
+      # - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=owncloud
+    volumes:
+      - ../data/Owncloud/DB:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - yosoft-network
+  owncloudredis:
+    image: redis:6
+    # container_name: owncloudredis
+    volumes:
+      - ../data/Owncloud/redis:/data
+    restart: unless-stopped
+    networks:
+      - yosoft-network
+
+networks:
+  yosoft-network:
+    external: true

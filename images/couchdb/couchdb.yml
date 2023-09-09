@@ -1,0 +1,27 @@
+version: "3"
+services:
+  db:
+      image: couchdb:latest
+      volumes:
+        - ../data/couch_data/database:/opt/couchdb/data
+        - ../data/couch_data/config/local.ini:/opt/couchdb/etc/local.ini
+      networks:
+        - yosoft-network
+      deploy:
+        resources:
+          limits:
+            cpus: "0.30"
+            memory: 256M
+          reservations:
+            cpus: "0.15"
+            memory: 128M
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.couchdb.rule=Host(`couchdb.yosoft.app`)"
+          - "traefik.http.routers.couchdb.entrypoints=websecure"
+          - "traefik.http.routers.couchdb.tls.certresolver=myresolver"
+          - "traefik.http.services.couchdb.loadbalancer.server.port=5984" 
+  
+networks:
+  yosoft-network:
+    external: true

@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  api-tana:
+    image: registro.yosoft.app/apitanautils:latest
+    entrypoint: "npm run start:prod"
+    ports:
+      - "3100:3100"
+    environment:
+      - NODE_ENV=production
+      - SET_CONTAINER_TIMEZONE=true
+      - CONTAINER_TIMEZONE=America/Bogota
+      - TZ=America/Bogota
+
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.api-tana.rule=Host(`api-tana.yosoft.app`)"
+        - "traefik.http.routers.api-tana.entrypoints=websecure"
+        # - "traefik.http.routers.api-tana.entrypoints=web"
+        - "traefik.http.routers.api-tana.tls.certresolver=myresolver"
+        # - "traefik.http.routers.api-tana.tls=true"
+        - "traefik.http.services.api-tana.loadbalancer.server.port=3100" # Siempre debemos definir un puerto.     
+
+    networks:
+      - yosoft-network
+
+    # configs:
+    #   - source: config_api_prod_base
+    #     target: /usr/local/lib/env/config.production.json
+    #     mode: 0440
+
+networks:
+  yosoft-network:
+    external: true
+
+# configs:
+#   config_api_prod_base:
+#     external: true
+# API_ADN_VRSN=apiv4:v1 docker stack deploy -c api-tana-utils.yml api-tana

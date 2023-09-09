@@ -1,0 +1,30 @@
+version: "3"
+services:
+  directus:
+    image: directus/directus:latest
+    ports:
+      - 8055:8055
+    volumes:
+      - ../data/directus/database:/directus/database
+      - ../data/directus/uploads:/directus/uploads
+    environment:
+      KEY: 'e64e5c36-9309-4139-ac52-5a8ec4c0d3de'
+      SECRET: 'e64e5c36-9309-4139-ac52-5a8ec4c0d3df'
+      ADMIN_EMAIL: 'ing_julioramirez@hotmail.com'
+      ADMIN_PASSWORD: 'y0s0ft2050..'
+      DB_CLIENT: 'sqlite3'
+      DB_FILENAME: '/directus/database/data.db'
+      WEBSOCKETS_ENABLED: 'true'
+    networks:
+      - yosoft-network
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.directus.rule=Host(`directus.yosoft.app`)"
+        - "traefik.http.routers.directus.entrypoints=websecure"
+        - "traefik.http.routers.directus.tls.certresolver=myresolver"
+        - "traefik.http.services.directus.loadbalancer.server.port=8055" # Siempre debemos definir un puerto.
+
+networks:
+  yosoft-network:
+    external: true

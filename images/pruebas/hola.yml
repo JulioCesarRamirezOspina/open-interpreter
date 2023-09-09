@@ -1,0 +1,19 @@
+version: "3.3"
+
+services:
+
+  hello_world:
+    image: tutum/hello-world
+    networks:
+      - yosoft-network
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.hola.rule=Host(`hola.yosoft.app`)"
+        - "traefik.http.routers.hola.entrypoints=websecure"
+        - "traefik.http.routers.hola.tls.certresolver=myresolver"
+        - "traefik.http.services.hola.loadbalancer.server.port=80" # Siempre debemos definir un puerto.     
+
+networks:
+  yosoft-network:
+    external: true
