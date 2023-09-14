@@ -1,1 +1,5 @@
 images/registro_data
+data/portainer_data/portainer.db
+data/portainer_data/portainer.key
+data/portainer_data/portainer.pub
+letsencrypt/acme.json
