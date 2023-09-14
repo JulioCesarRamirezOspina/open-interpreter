@@ -1,8 +1,11 @@
 version: "3.3"
+
 volumes:
   grafana-data:
   prometheus-data:
+  
 services:
+
   traefik:
     image: "traefik:latest"
     command:
@@ -65,7 +68,8 @@ services:
         - "traefik.http.services.portainer.loadbalancer.server.port=9000" # Siempre debemos definir un puerto.
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./portainer_data:/data"
+      - "./data/portainer_data:/data"
+
   grafana:
     image: grafana/grafana-oss:latest
     restart: unless-stopped
@@ -83,6 +87,7 @@ services:
         - "traefik.http.routers.grafana.entrypoints=websecure"
         - "traefik.http.routers.grafana.tls.certresolver=myresolver"
         - "traefik.http.services.grafana.loadbalancer.server.port=3000" # Siempre debemos definir un puerto.
+  
   prometheus:
     image: prom/prometheus:latest
     restart: unless-stopped
@@ -142,6 +147,7 @@ services:
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+
 networks:
   yosoft-network:
     external: true
