@@ -41,6 +41,7 @@ services:
         # The Web UI (enabled by --api.insecure=true)
       # - "8080:8080"
     environment:
+      - TZ=America/Bogota
       - LEGO_DISABLE_CNAME_SUPPORT=true
       - "GODADDY_HTTP_TIMEOUT=600"
       - "GODADDY_POLLING_INTERVAL=300"
@@ -87,6 +88,42 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./data/portainer_data:/data"
+    environment:
+      - TZ=America/Bogota
+
+  loki:
+    image: grafana/loki:latest
+    volumes:
+      - ./data/loki_data:/etc/loki
+    ports:
+      - "3110:3100"
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+    networks:
+      - yosoft-network
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.loki.rule=Host(`loki.yosoft.app`)"
+        - "traefik.http.routers.loki.entrypoints=websecure"
+        - "traefik.http.routers.loki.tls.certresolver=myresolver"
+        - "traefik.http.services.loki.loadbalancer.server.port=3110"
+    environment:
+      - TZ=America/Bogota
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/log:/var/log
+      - ./data/promtail_data:/etc/promtail
+    # ports:
+    #   - "1514:1514" # this is only needed if you are going to send syslogs
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+    networks:
+      - yosoft-network
+    environment:
+      - TZ=America/Bogota
 
   grafana:
     image: grafana/grafana-oss:latest
@@ -105,7 +142,9 @@ services:
         - "traefik.http.routers.grafana.entrypoints=websecure"
         - "traefik.http.routers.grafana.tls.certresolver=myresolver"
         - "traefik.http.services.grafana.loadbalancer.server.port=3000" # Siempre debemos definir un puerto.
-  
+    environment:
+      - TZ=America/Bogota
+    
   prometheus:
     image: prom/prometheus:latest
     restart: unless-stopped
@@ -129,6 +168,8 @@ services:
         - "traefik.http.routers.prometheus.entrypoints=websecure"
         - "traefik.http.routers.prometheus.tls.certresolver=myresolver"
         - "traefik.http.services.prometheus.loadbalancer.server.port=9090" # Siempre debemos definir un puerto.
+    environment:
+      - TZ=America/Bogota
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
@@ -152,6 +193,8 @@ services:
     #   - '--path.sysfs=/host/sys'
     #   - --collector.filesystem.ignored-mount-points
     #   - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+    environment:
+      - TZ=America/Bogota
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -165,7 +208,9 @@ services:
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
-
+    environment:
+      - TZ=America/Bogota
+      
 networks:
   yosoft-network:
     external: true
