@@ -5,3 +5,4 @@ data/portainer_data/portainer.pub
 letsencrypt/acme.json
 data/grafana_data/grafana.db
 data/prometheus_data/wal/00000000
+images/chatwoot/data/redis/dump.rdb

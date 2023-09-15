@@ -21,3 +21,9 @@ sudo docker stack rm traefik
 ```shell
 sudo docker stack deploy -c images/penpot/docker-compose.yml penpot
 ```
+
+# Ejecutar stack chatwoot
+
+```shell
+sudo docker stack deploy -c images/chatwoot/docker-compose.yml chatwoot
+```

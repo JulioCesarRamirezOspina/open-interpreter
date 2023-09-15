@@ -5,7 +5,10 @@ services:
     image: chatwoot/chatwoot:latest
     env_file: .env ## Change this file for customized env variables
     volumes:
-      - /data/storage:/app/storage
+      - ./data/storage:/app/storage
+    networks:
+      - yosoft-network
+
 
   rails:
     <<: *base
@@ -13,20 +16,22 @@ services:
       - postgres
       - redis
     ports:
-      - '127.0.0.1:3000:3000'
+      - '3100:3100'
     environment:
       - NODE_ENV=production
       - RAILS_ENV=production
       - INSTALLATION_ENV=docker
     entrypoint: docker/entrypoints/rails.sh
-    command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
+    command: ['bundle', 'exec', 'rails', 's', '-p', '3100', '-b', '0.0.0.0']
+    networks:
+      - yosoft-network
     deploy:
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.chatwoot.rule=Host(`chatwoot.yosoft.app`)"
         - "traefik.http.routers.chatwoot.entrypoints=websecure"
         - "traefik.http.routers.chatwoot.tls.certresolver=myresolver"
-        - "traefik.http.services.chatwoot.loadbalancer.server.port=3000" # Siempre debemos definir un puerto.
+        - "traefik.http.services.chatwoot.loadbalancer.server.port=3100" # Siempre debemos definir un puerto.
 
   sidekiq:
     <<: *base
@@ -38,19 +43,23 @@ services:
       - RAILS_ENV=production
       - INSTALLATION_ENV=docker
     command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
+    networks:
+        - yosoft-network
 
   postgres:
     image: postgres:12
     restart: always
     ports:
-      - '127.0.0.1:5432:5432'
+      - '5432:5432'
     volumes:
-      - /data/postgres:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=chatwoot
       - POSTGRES_USER=postgres
       # Please provide your own password.
-      - POSTGRES_PASSWORD=
+      - POSTGRES_PASSWORD=y0s0ft2050..
+    networks:
+      - yosoft-network
 
   redis:
     image: redis:alpine
@@ -58,6 +67,12 @@ services:
     command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
     env_file: .env
     volumes:
-      - /data/redis:/data
+      - ./data/redis:/data
     ports:
-      - '127.0.0.1:6379:6379'
+      - '6379:6379'
+    networks:
+      - yosoft-network
+
+networks:
+  yosoft-network:
+    external: true
