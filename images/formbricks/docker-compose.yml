@@ -1,0 +1,78 @@
+version: "3.3"
+x-environment: &environment
+  environment:
+    # The url of your Formbricks instance used in the admin panel
+    WEBAPP_URL:
+
+    # PostgreSQL DB for Formbricks to connect to
+    DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/formbricks?schema=public"
+
+    # Uncomment to enable a dedicated connection pool for Prisma using Prisma Data Proxy
+    # Cold boots will be faster and you'll be able to scale your DB independently of your app.
+    # @see https://www.prisma.io/docs/data-platform/data-proxy/use-data-proxy
+    # PRISMA_GENERATE_DATAPROXY=true
+    PRISMA_GENERATE_DATAPROXY:
+
+    # NextJS Auth
+    # @see: https://next-auth.js.org/configuration/options#nextauth_secret
+    # You can use: `openssl rand -base64 32` to generate one
+    NEXTAUTH_SECRET: l54C0nIXxC7ErIz78UAWSSGNYJVnpdBr
+
+    # Set this to your public-facing URL, e.g., https://example.com
+    # You do not need the NEXTAUTH_URL environment variable in Vercel.
+    NEXTAUTH_URL: http://localhost:3000
+
+    # PostgreSQL password
+    POSTGRES_PASSWORD: postgres
+
+    MAIL_FROM:
+    SMTP_HOST:
+    SMTP_PORT:
+    SMTP_SECURE_ENABLED:
+    SMTP_USER:
+    SMTP_PASSWORD:
+
+services:
+  postgres:
+    restart: always
+    image: postgres:15-alpine
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - yosoft-network
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.postgres.rule=Host(`postgres.yosoft.app`)"
+        - "traefik.http.routers.postgres.entrypoints=websecure"
+        - "traefik.http.routers.postgres.tls.certresolver=myresolver"
+        - "traefik.http.services.postgres.loadbalancer.server.port=5432" # Siempre debemos definir un puerto.
+    <<: *environment
+
+  formbricks:
+    restart: always
+    image: formbricks/formbricks:latest
+    depends_on:
+      - postgres
+    # ports:
+    #   - 3000:3000
+    networks:
+      - yosoft-network
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.forms.rule=Host(`forms.yosoft.app`)"
+        - "traefik.http.routers.forms.entrypoints=websecure"
+        - "traefik.http.routers.forms.tls.certresolver=myresolver"
+        - "traefik.http.services.forms.loadbalancer.server.port=3000" # Siempre debemos definir un puerto.
+
+    <<: *environment
+
+
+volumes:
+  postgres:
+    driver: local
+
+networks:
+  yosoft-network:
+    external: true

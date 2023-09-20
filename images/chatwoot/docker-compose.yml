@@ -27,8 +27,9 @@ services:
       - sh
       - -c
       - |
-        bundle exec rails db:chatwoot_prepare
         bundle exec rails s -p 3100 -b 0.0.0.0 &
+        bundle exec rails db:chatwoot_prepare
+
     networks:
       - yosoft-network
     deploy:

@@ -1,0 +1,66 @@
+version: "3.3"
+
+services:
+  postgres:
+    restart: always
+    image: postgres:15-alpine
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - yosoft-network
+    environment:
+      # WEBAPP_URL:
+      # DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/formbricks?schema=public"
+      # PRISMA_GENERATE_DATAPROXY:
+      # NEXTAUTH_SECRET:
+      # NEXTAUTH_URL: http://localhost:3000
+      POSTGRES_PASSWORD: y0s0ft2050..
+      # MAIL_FROM:
+      # SMTP_HOST:
+      # SMTP_PORT:
+      # SMTP_SECURE_ENABLED:
+      # SMTP_USER:
+      # SMTP_PASSWORD:
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.postgres.rule=Host(`postgres.yosoft.app`)"
+        - "traefik.http.routers.postgres.entrypoints=websecure"
+        - "traefik.http.routers.postgres.tls.certresolver=myresolver"
+        - "traefik.http.services.postgres.loadbalancer.server.port=5432"
+
+  formbricks:
+    restart: always
+    image: formbricks/formbricks:latest
+    depends_on:
+      - postgres
+    networks:
+      - yosoft-network
+    environment:
+      WEBAPP_URL:
+      DATABASE_URL: "postgresql://postgres:y0s0ft2050%2E%2E@postgres.yosoft.app:5432/formbricks?schema=public"
+      PRISMA_GENERATE_DATAPROXY:
+      NEXTAUTH_SECRET: l54C0nIXxC7ErIz78UAWSSGNYJVnpdBr
+      NEXTAUTH_URL: https://forms.yosoft.app
+      POSTGRES_PASSWORD: y0s0ft2050..
+      MAIL_FROM:
+      SMTP_HOST:
+      SMTP_PORT:
+      SMTP_SECURE_ENABLED:
+      SMTP_USER:
+      SMTP_PASSWORD:
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.forms.rule=Host(`forms.yosoft.app`)"
+        - "traefik.http.routers.forms.entrypoints=websecure"
+        - "traefik.http.routers.forms.tls.certresolver=myresolver"
+        - "traefik.http.services.forms.loadbalancer.server.port=3000"
+
+volumes:
+  postgres:
+    driver: local
+
+networks:
+  yosoft-network:
+    external: true

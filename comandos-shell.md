@@ -27,3 +27,9 @@ sudo docker stack deploy -c images/penpot/docker-compose.yml penpot
 ```shell
 sudo docker stack deploy -c images/chatwoot/docker-compose.yml chatwoot
 ```
+
+# Ejecutar stack forms
+
+```shell
+sudo docker stack deploy -c images/formbricks/docker-compose.yml forms
+```
