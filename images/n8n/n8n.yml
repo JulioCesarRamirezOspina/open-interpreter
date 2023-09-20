@@ -1,0 +1,150 @@
+version: "3.8"
+
+services:
+  n8n_editor:
+    image: n8nio/n8n:latest
+    #command: start
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_DATABASE: n8n_fila
+      DB_POSTGRESDB_USER: postgres
+      DB_POSTGRESDB_PASSWORD: y0s0ft2050..
+      # criar chave https://acte.ltd/utils/randomkeygen
+      N8N_ENCRYPTION_KEY: V845qVmUfkgMWrNnXjCghIp7dWQv21tM
+      # hosts e URL
+      N8N_HOST: n8n.yosoft.app
+      N8N_EDITOR_BASE_URL: https://n8n.yosoft.app/
+      N8N_PROTOCOL: https
+      NODE_ENV: production
+      # webhooks
+      WEBHOOK_URL: https://webhook.n8n.yosoft.app/
+      # modo de execuçao para fila
+      EXECUTIONS_MODE: queue
+      # redis
+      QUEUE_BULL_REDIS_HOST: redis
+      QUEUE_BULL_REDIS_PORT: 6379
+      QUEUE_BULL_REDIS_DB: 2
+      # bibliotecas utilizadas
+      NODE_FUNCTION_ALLOW_EXTERNAL: moment,lodash,moment-with-locales
+      EXECUTIONS_DATA_PRUNE: 'true'
+      EXECUTIONS_DATA_MAX_AGE: 336
+    deploy:
+      # mode: replicated
+      # replicas: 1
+      # placement:
+      #   constraints:
+      #     - node.role == manager
+      # resources:
+      #   limits:
+      #     cpus: '0.3'
+      #     memory: 512M
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.n8n_editor.rule=Host(`n8n.yosoft.app`)
+        - traefik.http.routers.n8n_editor.service=n8n_editor
+        - traefik.http.routers.n8n_editor.entrypoints=websecure
+        - traefik.http.routers.n8n_editor.tls.certresolver=myresolver
+        - traefik.http.routers.n8n_editor.tls=true
+        - traefik.http.services.n8n_editor.loadbalancer.server.port=5678
+    networks:
+      - yosoft-network
+  
+  n8n_webhook:
+    image: n8nio/n8n:latest
+    command: webhook
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_DATABASE: n8n_fila
+      DB_POSTGRESDB_USER: postgres
+      DB_POSTGRESDB_PASSWORD: y0s0ft2050..
+      # criar chave https://acte.ltd/utils/randomkeygen
+      N8N_ENCRYPTION_KEY: 5mzMniiIvmQFznWpRs05pkFBFhr6FUBg
+      # hosts e URL
+      N8N_HOST: n8n.yosoft.app
+      N8N_EDITOR_BASE_URL: https://n8n.yosoft.app/
+      N8N_PROTOCOL: https
+      NODE_ENV: production
+      # webhooks
+      WEBHOOK_URL: https://webhook.n8n.yosoft.app/
+      # modo de execuçao para fila
+      EXECUTIONS_MODE: queue
+      # redis
+      QUEUE_BULL_REDIS_HOST: redis
+      QUEUE_BULL_REDIS_PORT: 6379
+      QUEUE_BULL_REDIS_DB: 2
+      # bibliotecas utilizadas
+      NODE_FUNCTION_ALLOW_EXTERNAL: moment,lodash,moment-with-locales
+      EXECUTIONS_DATA_PRUNE: 'true'
+      EXECUTIONS_DATA_MAX_AGE: 336
+    deploy:
+      # mode: replicated
+      # # pode criar replicas
+      # replicas: 1
+      # placement:
+      #   constraints:
+      #     - node.role == manager
+      # resources:
+      #   limits:
+      #     cpus: '0.5'
+      #     memory: 320M
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.n8n_webhook.rule=Host(`webhook.n8n.yosoft.app`)
+        - traefik.http.routers.n8n_webhook.service=n8n_webhook
+        - traefik.http.routers.n8n_webhook.entrypoints=websecure
+        - traefik.http.routers.n8n_webhook.tls.certresolver=myresolver
+        - traefik.http.routers.n8n_webhook.tls=true
+        - traefik.http.services.n8n_webhook.loadbalancer.server.port=5678
+    networks:
+      - yosoft-network
+  
+  n8n_worker:
+    image: n8nio/n8n:latest
+    command: worker --concurrency=3
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_DATABASE: n8n_fila
+      DB_POSTGRESDB_USER: postgres
+      DB_POSTGRESDB_PASSWORD: y0s0ft2050..
+      # criar chave https://acte.ltd/utils/randomkeygen
+      N8N_ENCRYPTION_KEY: oG45TqrHiUxqqKEcWn1gJ9GXHn3o6ict
+      # hosts e URL
+      N8N_HOST: n8n.yosoft.app
+      N8N_EDITOR_BASE_URL: https://n8n.yosoft.app/
+      N8N_PROTOCOL: https
+      NODE_ENV: production
+      # webhooks
+      WEBHOOK_URL: https://webhook.n8n.yosoft.app/
+      # modo de execuçao para fila
+      EXECUTIONS_MODE: queue
+      # redis
+      QUEUE_BULL_REDIS_HOST: redis
+      QUEUE_BULL_REDIS_PORT: 6379
+      QUEUE_BULL_REDIS_DB: 2
+      # bibliotecas utilizadas
+      NODE_FUNCTION_ALLOW_EXTERNAL: moment,lodash,moment-with-locales
+      EXECUTIONS_DATA_PRUNE: 'true'
+      EXECUTIONS_DATA_MAX_AGE: 336
+    deploy:
+      # mode: replicated
+      # # pode criar replicas
+      # replicas: 1
+      # placement:
+      #   constraints:
+      #     - node.role == manager
+      # resources:
+      #   limits:
+      #     cpus: '0.5'
+      #     memory: 384M
+    networks:
+      - yosoft-network
+
+networks:
+  yosoft-network:
+    external: true

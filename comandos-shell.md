@@ -33,3 +33,15 @@ sudo docker stack deploy -c images/chatwoot/docker-compose.yml chatwoot
 ```shell
 sudo docker stack deploy -c images/formbricks/docker-compose.yml forms
 ```
+
+# Ejecutar stack redis
+
+```shell
+sudo docker stack deploy -c images/redis/redis.yml redis
+```
+
+# Ejecutar stack n8n
+
+```shell
+sudo docker stack deploy -c images/n8n/n8n.yml n8n
+```
