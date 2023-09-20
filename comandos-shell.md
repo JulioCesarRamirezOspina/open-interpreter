@@ -42,6 +42,17 @@ sudo docker stack deploy -c images/redis/redis.yml redis
 
 # Ejecutar stack n8n
 
+En postgres crear la base de datos
+```shell
+psql -U postgress
+CREATE DATABASE n8n_fila;
+```
 ```shell
 sudo docker stack deploy -c images/n8n/n8n.yml n8n
+```
+
+# Ejecutar stack postgres
+
+```shell
+sudo docker stack deploy -c images/postgres/postgres.yml postgres
 ```

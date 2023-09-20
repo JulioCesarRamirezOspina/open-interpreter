@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: julio.ramirez@yosoft.com.co
+      PGADMIN_DEFAULT_PASSWORD: y0s0ft2050..
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    deploy:
+      # mode: replicated
+      # replicas: 1
+      # placement:
+      #     constraints:
+      #       - node.role == manager
+      # resources:
+      #     limits:
+      #       cpus: '0.4'
+      #       memory: 256M
+      labels:
+          - traefik.enable=true
+          #SSL
+          - traefik.http.routers.pgadmin.rule=Host(`pg.yosoft.app`)
+          - traefik.http.services.pgadmin.loadbalancer.server.port=80
+          - traefik.http.routers.pgadmin.service=pgadmin
+          - traefik.http.routers.pgadmin.tls.certresolver=myresolver
+          - traefik.http.routers.pgadmin.entrypoints=websecure
+          - traefik.http.routers.pgadmin.tls=true
+    networks:
+      - yosoft-network
+
+networks:
+  yosoft-network:
+    external: true
+
+volumes:
+  pgadmin_data:
+    external: true
