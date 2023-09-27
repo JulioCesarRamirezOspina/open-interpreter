@@ -4,7 +4,7 @@ services:
   postgres:
     image: postgres:15
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - forms_postgres:/var/lib/postgresql/data
     networks:
       - yosoft-network
     environment:
@@ -24,7 +24,7 @@ services:
       #   - "traefik.http.services.postgres.loadbalancer.server.port=5432"
 
 volumes:
-  postgres:
+  forms_postgres:
     external: true
 
 networks:

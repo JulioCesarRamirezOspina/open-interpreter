@@ -35,7 +35,7 @@ services:
       - yosoft-network
     environment:
       WEBAPP_URL: https://forms.yosoft.app
-      DATABASE_URL: "postgresql://postgres:y0s0ft2050@postgres.yosoft.app:5432/formbricks?schema=public"
+      DATABASE_URL: "postgresql://postgres:y0s0ft2050@postgres:5432/formbricks?schema=public"
       PRISMA_GENERATE_DATAPROXY:
       NEXTAUTH_SECRET: l54C0nIXxC7ErIz78UAWSSGNYJVnpdBr
       NEXTAUTH_URL: https://forms.yosoft.app
